@@ -10,7 +10,8 @@ from dotenv import load_dotenv
 from ups import DeltaUPS
 
 
-load_dotenv(f"{os.path.dirname(os.path.abspath(__name__))}/.env")
+load_dotenv(
+    "{path}/.env".format(path=os.path.dirname(os.path.abspath(__name__))))
 
 # UPS
 deltaups = DeltaUPS(os.environ.get("SERIAL_PORT"),
@@ -92,7 +93,7 @@ def publish_ups_data():
     })
 
     publish.single(
-        f"UPS/{os.environ.get('DEVICE_NUMBER')}/Monitor",
+        "UPS/{number}/Monitor".format(number=os.environ.get('DEVICE_NUMBER')),
         json.dumps(send_data),
         hostname=os.environ.get("MQTT_IP"),
         port=int(os.environ.get("MQTT_PORT"))

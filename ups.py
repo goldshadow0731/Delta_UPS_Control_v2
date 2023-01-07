@@ -43,7 +43,8 @@ class DeltaUPS():
     def send_data(self, data: str) -> None:
         try:
             with self.serial as ser:
-                ser.write((f"~00P{len(data):03d}" + data).encode("ASCII"))
+                ser.write(("~00P{length:03d}".format(
+                    length=len(data)) + data).encode("ASCII"))
         except SerialException:
             # TODO: handle SerialException
             pass
