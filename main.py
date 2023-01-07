@@ -1,15 +1,20 @@
 # -*- coding: utf8 -*-
 import json
 import os
+import socket
 
 from apscheduler.schedulers.blocking import BlockingScheduler
-from paho.mqtt import client as MQTT
+from paho.mqtt import publish
 from dotenv import load_dotenv
 
 from ups import DeltaUPS
 
 
 load_dotenv(f"{os.path.dirname(os.path.abspath(__name__))}/.env")
+
+# UPS
+deltaups = DeltaUPS(os.environ.get("SERIAL_PORT"),
+                    baudrate=2400, timeout=1)
 
 
 def publish_ups_data():
@@ -86,22 +91,15 @@ def publish_ups_data():
         }
     })
 
-    client.publish(
+    publish.single(
         f"UPS/{os.environ.get('DEVICE_NUMBER')}/Monitor",
-        json.dumps(send_data)
+        json.dumps(send_data),
+        hostname=os.environ.get("MQTT_IP"),
+        port=int(os.environ.get("MQTT_PORT"))
     )
 
 
 if __name__ == "__main__":
-    # MQTT
-    client = MQTT.Client()
-    client.connect(os.environ.get("MQTT_IP"), int(
-        os.environ.get("MQTT_PORT")), 60)
-
-    # UPS
-    deltaups = DeltaUPS(os.environ.get("SERIAL_PORT"),
-                        baudrate=2400, timeout=1)
-
     # set cron job
     scheduler = BlockingScheduler()
     scheduler.add_job(publish_ups_data, "interval", seconds=5)
